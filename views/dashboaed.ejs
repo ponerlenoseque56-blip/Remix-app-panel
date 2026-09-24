@@ -16,7 +16,66 @@
 .actions{padding:0 15px;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 table{width:100%;border-collapse:collapse;background:#111;margin-top:10px}
 th{background:#ff0000;color:#fff;padding:10px;font-size:11px;text-align:left}
-td{padding:10px;border-bottom:1px solid #222;font-size:12px}
+td{padding:10px;border-bottom:1px solid #<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remix App</title>
+<style>
+body{background:#0f0f0f;color:white;font-family:Arial;margin:0;padding:15px}
+.header{display:flex;justify-content:space-between;align-items:center;background:#1a1a1a;padding:12px 15px;border-radius:12px;border-left:4px solid #ff0000}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:15px 0}
+.card{background:#1e1e1e;padding:12px;border-radius:10px;text-align:center;border:1px solid #333}
+.card h2{margin:0;color:#ff0000;font-size:22px}
+.top-btns{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:8px;border:none;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-red{background:#ff0000;color:white} .btn-dark{background:#333;color:white}
+.search{width:100%;padding:12px;background:#1e1e1e;border:1px solid #444;color:white;border-radius:8px;margin-bottom:15px;box-sizing:border-box}
+table{width:100%;border-collapse:collapse;background:#1a1a1a;border-radius:10px;overflow:hidden}
+th{background:#ff0000;padding:10px;font-size:12px} td{padding:10px;border-bottom:1px solid #333;font-size:13px;text-align:center}
+.wsp{position:fixed;bottom:20px;right:20px;background:#25D366;width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.5);z-index:999}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div><b>2026 REMIX APP v1.0</b><br><small style="color:#888"><%= username %> | Creditos: <%= db.credits %></small></div>
+<a href="/logout" class="btn btn-dark">Salir</a>
+</div>
+
+<div class="stats">
+<div class="card"><h2><%= total %></h2><small>TOTAL</small></div>
+<div class="card"><h2><%= premium %></h2><small>PREMIUM</small></div>
+<div class="card"><h2><%= demos %></h2><small>DEMO</small></div>
+</div>
+
+<div class="top-btns">
+<a href="/agregar-usuario" class="btn btn-red">+ Agregar Usuario</a>
+<button onclick="addCred()" class="btn btn-dark">+ Creditos</button>
+<button onclick="delDemos()" class="btn btn-dark">Borrar Demos</button>
+</div>
+
+<input id="buscador" class="search" placeholder="🔍 Buscar por nombre o email..." onkeyup="filtrar()">
+
+<table id="tabla">
+<tr><th>NOMBRE</th><th>EMAIL</th><th>TIPO</th><th>VENCE</th><th>ACCION</th></tr>
+<% db.users.forEach(u=>{ %>
+<tr><td><%= u.nombre %></td><td><%= u.email %></td><td style="color:<%= u.tipo==='Premium' ? '#00ff88' : '#ffaa00' %>"><%= u.tipo %></td><td><%= u.vencimiento %></td><td><button onclick="borrar('<%= u.email %>')" style="background:#ff0000;color:white;border:none;padding:5px 8px;border-radius:5px">X</button></td></tr>
+<% }) %>
+</table>
+
+<a href="https://wa.me/5492640000000" class="wsp" target="_blank">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M19.1 4.9A9.9 9.9 0 0 0 12.1 0a9.9 9.9 0 0 0-8.4 15.1L2 24l9.1-2.3A9.9 9.9 0 0 0 22 12a9.8 9.8 0 0 0-2.9-7.1zM12 21.5a9.4 9.4 0 0 1-4.8-1.3l-.3-.2-5.4 1.4 1.4-5.2-.2-.3A9.4 9.4 0 0 1 12 2.5a9.4 9.4 0 0 1 6.6 2.7 9.4 9.4 0 0 1 2.8 6.7 9.4 9.4 0 0 1-9.4 9.6zm5.3-7.1c-.3-.2-1.7-.8-2-1-.2-.1-.4-.2-.6.2s-.7.9-.8 1c-.2.2-.3.2-.6.1a7.6 7.6 0 0 1-2.2-1.4 8.1 8.1 0 0 1-1.5-1.8c-.2-.3 0-.4.1-.6l.4-.5c.1-.1.1-.2.2-.4s0-.3 0-.4-.6-1.4-.8-1.9c-.2-.5-.4-.6-.4h-.5c-.2 0-.4.1-.6.3s-.8.8-.8 1.9.8 2.2 1 2.4c.1.2 1.6 2.4 3.9 3.4.5.2 1 .4 1.3.5.5.2 1 .1 1.3.1.4-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.3 0-.1-.2-.2-.5-.3z"/></svg>
+</a>
+
+<script>
+function filtrar(){let f=document.getElementById('buscador').value.toLowerCase();document.querySelectorAll('#tabla tr:not(:first-child)').forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(f)?'':'none'})}
+function borrar(email){if(!confirm('¿Borrar '+email+'?'))return;fetch('/api/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(()=>location.reload())}
+function delDemos(){if(!confirm('¿Borrar todas las DEMO?'))return;fetch('/api/delete-demos',{method:'POST'}).then(()=>location.reload())}
+function addCred(){let a=prompt('¿Cuantos creditos agregar?');if(!a)return;fetch('/api/add-credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:a})}).then(()=>location.reload())}
+</script>
+</body>
+</html>}
 .premium{color:#ff0000;font-weight:bold} .demo{color:#888}
 .credits-box{background:#1a1a1a;border:1px solid #ff0000;padding:10px;border-radius:8px;margin:10px 15px;display:flex;justify-content:space-between;align-items:center}
 input.cred{width:80px;background:#000;color:#fff;border:1px solid #ff0000;padding:6px;border-radius:6px}
