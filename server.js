@@ -20,7 +20,7 @@ let db={credits:50,users:[]};
 const USER='Remix22';
 const PASS='2212';
 
-app.get('/',(req,res)=>res.render('login'));
+app.get('/',(req,res)=>{res.render('login');});
 
 app.post('/login',(req,res)=>{
  if(req.body.username===USER && req.body.password===PASS){
@@ -33,13 +33,7 @@ app.post('/login',(req,res)=>{
 app.get('/dashboard',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
  db.users=db.users.filter(u=>!u.expiraEn || u.expiraEn>Date.now());
- res.render('dashboard',{
-  username:req.session.user,
-  db:db,
-  total:db.users.length,
-  premium:db.users.filter(u=>u.tipo==='Premium').length,
-  demos:db.users.filter(u=>u.tipo==='Demo').length
- });
+ res.render('dashboard',{username:req.session.user,db:db,total:db.users.length,premium:db.users.filter(u=>u.tipo==='Premium').length,demos:db.users.filter(u=>u.tipo==='Demo').length});
 });
 
 app.get('/agregar-usuario',(req,res)=>{
@@ -51,16 +45,13 @@ app.post('/agregar-usuario',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
  let esDemo = req.body.tipo && req.body.tipo.toLowerCase().includes('demo');
  let fecha = esDemo ? new Date(Date.now()+60*60*1000) : new Date(Date.now()+30*24*60*60*1000);
- 
- let texto = fecha.toLocaleString('es-AR', {
-   timeZone: 'America/Argentina/San_Juan',
-   day: '2-digit',
-   month: '2-digit',
-   year: 'numeric',
-   hour: '2-digit',
-   minute: '2-digit',
-   hour12: false
- });
+ let texto = fecha.toLocaleString('es-AR',{timeZone:'America/Argentina/San_Juan',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+ db.users.push({nombre:req.body.nombre,email:req.body.email,password:req.body.password,tipo:esDemo?'Demo':'Premium',dispositivos:req.body.dispositivos||'1',vencimiento:texto,expiraEn:fecha.getTime()});
+ if(!esDemo) db.credits-=1;
+ res.redirect('/dashboard');
+});
 
- db.users.push({
-  nombre
+app.post('/api/delete-user',(req,res)=>{db.users=db.users.filter(u=>u.email!==req.body.email);res.json({ok:true});});
+app.post('/api/delete-demos',(req,res)=>{db.users=db.users.filter(u=>u.tipo!=='Demo');res.json({ok:true});});
+app.get('/logout',(req,res)=>{req.session.destroy(()=>res.redirect('/'));});
+app.listen(process.env.PORT||3000,()=>{console.log('ON');});
