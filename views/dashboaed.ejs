@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REMIX APP Panel</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#000;color:#fff;font-family:Arial}
+.header{background:#111;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ff0000}
+.header h2{margin:0;color:#ff0000;font-size:16px}
+.btn-red{background:#ff0000;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:bold;cursor:pointer}
+.btn-black{background:#222;color:#fff;border:1px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:15px}
+.card{border-radius:12px;padding:12px;text-align:center}
+.card.red{background:linear-gradient(135deg,#ff0000,#7a0000)} .card.black{background:#1a1a1a;border:1px solid #333}
+.card h3{margin:0;font-size:22px} .card p{margin:4px 0 0;font-size:11px;opacity:.8}
+.actions{padding:0 15px;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;background:#111;margin-top:10px}
+th{background:#ff0000;color:#fff;padding:10px;font-size:11px;text-align:left}
+td{padding:10px;border-bottom:1px solid #222;font-size:12px}
+.premium{color:#ff0000;font-weight:bold} .demo{color:#888}
+.credits-box{background:#1a1a1a;border:1px solid #ff0000;padding:10px;border-radius:8px;margin:10px 15px;display:flex;justify-content:space-between;align-items:center}
+input.cred{width:80px;background:#000;color:#fff;border:1px solid #ff0000;padding:6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="header">
+<h2>▶ REMIX APP</h2>
+<div><span style="font-size:12px"><%= username %> • Créditos: <%= db.credits %></span> <a href="/logout"><button class="btn-black">Salir</button></a></div>
+</div>
+
+<div class="stats">
+<div class="card red"><h3><%= total %></h3><p>TOTAL<br>CLIENTES</p></div>
+<div class="card red"><h3><%= premium %></h3><p>PREMIUM<br>ACTIVOS</p></div>
+<div class="card black"><h3><%= demos %></h3><p>DEMOS<br>ACTIVOS</p></div>
+<div class="card black"><h3><%= vencidos %></h3><p>VENCIDOS</p></div>
+</div>
+
+<div class="credits-box">
+<span>🔑 Créditos (solo vos ves esto): <b style="color:#ff0000"><%= db.credits %></b></span>
+<form id="credForm" style="display:flex;gap:6px">
+<input class="cred" type="number" id="credAmount" placeholder="+5" value="5">
+<button class="btn-red" type="submit">Agregar</button>
+</form>
+</div>
+
+<div class="actions">
+<a href="/agregar-usuario"><button class="btn-red">+ Agregar Cliente</button></a>
+<button class="btn-black" onclick="deleteDemos()">🗑️ Borrar Todos los Demos</button>
+<button class="btn-black" onclick="location.reload()">🔄 Actualizar</button>
+</div>
+
+<table>
+<tr><th>CLIENTE</th><th>TIPO</th><th>DISP</th><th>VENCE</th><th>ACCIÓN</th></tr>
+<% db.users.forEach(u=>{ %>
+<tr>
+<td><%= u.nombre %><br><span style="opacity:.5"><%= u.email %></span></td>
+<td class="<%= u.tipo==='Premium'?'premium':'demo' %>"><%= u.tipo %></td>
+<td><%= u.dispositivos %></td>
+<td><%= u.vencimiento %></td>
+<td><button class="btn-black" style="padding:4px 8px" onclick="delUser('<%= u.email %>')">Borrar</button></td>
+</tr>
+<% }) %>
+</table>
+
+<script>
+function delUser(email){ if(confirm('Borrar '+email+'?')){ fetch('/api/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(()=>location.reload()) } }
+function deleteDemos(){ if(confirm('¿Borrar TODOS los demos?')){ fetch('/api/delete-demos',{method:'POST'}).then(()=>location.reload()) } }
+document.getElementById('credForm').addEventListener('submit',e=>{ e.preventDefault(); fetch('/api/add-credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:parseInt(document.getElementById('credAmount').value)})}).then(r=>r.json()).then(()=>location.reload()) })
+</script>
+</body>
+</html>
