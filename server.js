@@ -11,7 +11,6 @@ if (!fs.existsSync(viewsPath)) viewsPath = path.join(__dirname, 'remix-app-panel
 
 app.set('view engine', 'ejs');
 app.set('views', viewsPath);
-
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(session({secret:'remix2026',resave:false,saveUninitialized:true}));
@@ -20,27 +19,20 @@ let db={credits:50,users:[]};
 const USER='Remix22';
 const PASS='2212';
 
-app.get('/',(req,res)=>{res.render('login');});
-
+app.get('/',(req,res)=>res.render('login'));
 app.post('/login',(req,res)=>{
- if(req.body.username===USER && req.body.password===PASS){
-  req.session.user=USER;
-  return res.redirect('/dashboard');
- }
+ if(req.body.username===USER && req.body.password===PASS){req.session.user=USER;return res.redirect('/dashboard');}
  res.send('Clave mal <a href="/">Volver</a>');
 });
-
 app.get('/dashboard',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
  db.users=db.users.filter(u=>!u.expiraEn || u.expiraEn>Date.now());
  res.render('dashboard',{username:req.session.user,db:db,total:db.users.length,premium:db.users.filter(u=>u.tipo==='Premium').length,demos:db.users.filter(u=>u.tipo==='Demo').length});
 });
-
 app.get('/agregar-usuario',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
  res.render('agregar-usuario',{db:db});
 });
-
 app.post('/agregar-usuario',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
  let esDemo = req.body.tipo && req.body.tipo.toLowerCase().includes('demo');
@@ -49,6 +41,21 @@ app.post('/agregar-usuario',(req,res)=>{
  db.users.push({nombre:req.body.nombre,email:req.body.email,password:req.body.password,tipo:esDemo?'Demo':'Premium',dispositivos:req.body.dispositivos||'1',vencimiento:texto,expiraEn:fecha.getTime()});
  if(!esDemo) db.credits-=1;
  res.redirect('/dashboard');
+});
+
+// ESTA ES LA QUE FALTABA - AGREGAR CREDITOS
+app.post('/api/add-credits',(req,res)=>{
+ let cant = parseInt(req.body.cantidad || req.body.credits || req.body.amount || 5);
+ if(isNaN(cant)) cant = 5;
+ db.credits += cant;
+ res.json({ok:true, credits:db.credits});
+});
+// compatibilidad por si tu dashboard llama a otra ruta
+app.post('/api/credits',(req,res)=>{
+ let cant = parseInt(req.body.cantidad || req.body.credits || req.body.amount || 5);
+ if(isNaN(cant)) cant = 5;
+ db.credits += cant;
+ res.json({ok:true, credits:db.credits});
 });
 
 app.post('/api/delete-user',(req,res)=>{db.users=db.users.filter(u=>u.email!==req.body.email);res.json({ok:true});});
