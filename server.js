@@ -1,64 +1,67 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agregar Cliente - REMIX APP</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:Arial}
-.header{background:#0a0a0a;padding:12px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ff0000}
-.box{background:#151515;border:1px solid #222;border-radius:12px;margin:15px;padding:18px}
-input,select{width:100%;padding:12px;margin:8px 0;background:#111;border:1px solid #333;border-radius:8px;color:white;font-size:14px}
-label{font-size:12px;color:#888;margin-top:8px;display:block}
-.btn{width:100%;padding:12px;border-radius:25px;border:none;font-weight:bold;cursor:pointer;margin-top:12px;font-size:15px}
-.btn-red{background:#ff0000;color:white}
-.btn-dark{background:#222;color:white;text-decoration:none;display:block;text-align:center}
-.info{background:#1a1a1a;border-left:3px solid #ff0000;padding:10px;margin-bottom:12px;border-radius:5px;font-size:12px;color:#ccc}
-</style>
-</head>
-<body>
+const express = require('express');
+const path = require('path');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const app = express();
 
-<div class="header">
-<b style="color:#ff0000">▶ REMIX APP</b>
-<div style="font-size:13px">Créditos: <%= db.credits %></div>
-</div>
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'Remix-app-panel', 'views'));
 
-<div class="box">
-<h2 style="color:#ff0000;text-align:center;margin-bottom:10px">+ Agregar Cliente</h2>
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-<div class="info">
-<b style="color:#ff0000">DEMO:</b> Dura 1 HORA y se borra sola.<br>
-<b style="color:#fff">PREMIUM:</b> Dura 30 días.
-</div>
+app.use(session({
+  secret: 'remix2026',
+  resave: false,
+  saveUninitialized: true
+}));
 
-<form method="POST" action="/agregar-usuario">
-<label>Nombre del cliente</label>
-<input type="text" name="nombre" placeholder="Ej: Gonzalo" required>
+let db = {
+  credits: 50,
+  users: []
+};
 
-<label>Email / Usuario</label>
-<input type="email" name="email" placeholder="Ej: cliente@gmail.com" required>
+const USER = 'Remix22';
+const PASS = '2212';
 
-<label>Contraseña</label>
-<input type="text" name="password" placeholder="Ej: 1234" value="1234" required>
+app.get('/', (req, res) => {
+  res.render('login');
+});
 
-<label>Tipo de cuenta</label>
-<select name="tipo" required>
-<option value="Premium">PREMIUM - 30 días</option>
-<option value="Demo">DEMO - 1 hora</option>
-</select>
+app.post('/login', (req, res) => {
+  if (req.body.username === USER && req.body.password === PASS) {
+    req.session.user = USER;
+    return res.redirect('/dashboard');
+  }
+  res.send('Usuario o clave incorrecta <a href="/">Volver</a>');
+});
 
-<label>Dispositivos</label>
-<select name="dispositivos">
-<option value="1">1 Dispositivo</option>
-<option value="2">2 Dispositivos</option>
-<option value="3">3 Dispositivos</option>
-</select>
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/'));
+});
 
-<button class="btn btn-red" type="submit">🔥 Crear Cliente</button>
-<a href="/dashboard" class="btn btn-dark">Volver al Dashboard</a>
-</form>
-</div>
+app.get('/dashboard', (req, res) => {
+  if (!req.session.user) return res.redirect('/');
+  
+  let ahora = Date.now();
+  db.users = db.users.filter(u => {
+    if (!u.expiraEn) return true;
+    return u.expiraEn > ahora;
+  });
 
-</body>
-</html>
+  let total = db.users.length;
+  let premium = db.users.filter(u => u.tipo === 'Premium').length;
+  let demos = db.users.filter(u => u.tipo === 'Demo').length;
+
+  res.render('dashboard', {
+    username: req.session.user,
+    db: db,
+    total: total,
+    premium: premium,
+    demos: demos
+  });
+});
+
+app.get('/agregar-usuario', (req, res) => {
+  if (!req.session.user) return res.redirect('/');
+ 
