@@ -5,15 +5,9 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const app = express();
 
-// DETECTA SOLO DONDE ESTAN TUS VIEWS, SIN ROMPER
 let viewsPath = path.join(__dirname, 'views');
-if (!fs.existsSync(viewsPath)) {
-  viewsPath = path.join(__dirname, 'Remix-app-panel', 'views');
-}
-if (!fs.existsSync(viewsPath)) {
-  viewsPath = path.join(__dirname, 'remix-app-panel', 'views');
-}
-console.log("Views en:", viewsPath);
+if (!fs.existsSync(viewsPath)) viewsPath = path.join(__dirname, 'Remix-app-panel', 'views');
+if (!fs.existsSync(viewsPath)) viewsPath = path.join(__dirname, 'remix-app-panel', 'views');
 
 app.set('view engine', 'ejs');
 app.set('views', viewsPath);
@@ -26,7 +20,7 @@ let db={credits:50,users:[]};
 const USER='Remix22';
 const PASS='2212';
 
-app.get('/',(req,res)=>{res.render('login');});
+app.get('/',(req,res)=>res.render('login'));
 
 app.post('/login',(req,res)=>{
  if(req.body.username===USER && req.body.password===PASS){
@@ -38,7 +32,6 @@ app.post('/login',(req,res)=>{
 
 app.get('/dashboard',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
- // borra vencidos
  db.users=db.users.filter(u=>!u.expiraEn || u.expiraEn>Date.now());
  res.render('dashboard',{
   username:req.session.user,
@@ -56,18 +49,10 @@ app.get('/agregar-usuario',(req,res)=>{
 
 app.post('/agregar-usuario',(req,res)=>{
  if(!req.session.user) return res.redirect('/');
- 
- // ESTA ES LA UNICA PARTE MODIFICADA - DE 3 DIAS A 1 HORA
  let esDemo = req.body.tipo && req.body.tipo.toLowerCase().includes('demo');
- let fecha;
- if(esDemo){
-   fecha = new Date(Date.now() + 60 * 60 * 1000); // 1 HORA
- } else {
-   fecha = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 DIAS PREMIUM
- }
-
- let texto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-
+ let fecha = esDemo ? new Date(Date.now()+60*60*1000) : new Date(Date.now()+30*24*60*60*1000);
+ let texto = fecha.toLocaleDateString('es-AR')+' '+fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+ 
  db.users.push({
   nombre:req.body.nombre,
   email:req.body.email,
@@ -77,7 +62,9 @@ app.post('/agregar-usuario',(req,res)=>{
   vencimiento:texto,
   expiraEn:fecha.getTime()
  });
- db.credits -= 1;
+
+ if(!esDemo) db.credits -= 1;
+
  res.redirect('/dashboard');
 });
 
@@ -92,5 +79,4 @@ app.post('/api/delete-demos',(req,res)=>{
 });
 
 app.get('/logout',(req,res)=>{req.session.destroy(()=>res.redirect('/'));});
-
-app.listen(process.env.PORT||3000,()=>console.log('ON '+process.env.PORT));
+app.listen(process.env.PORT||3000,()=>console.log('ON'));
