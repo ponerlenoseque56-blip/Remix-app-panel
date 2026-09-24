@@ -20,8 +20,8 @@ if(fs.existsSync(DB_PATH)){ try{ db = JSON.parse(fs.readFileSync(DB_PATH)); }cat
 function save(){ fs.writeFileSync(DB_PATH, JSON.stringify(db,null,2)); }
 
 // ADMIN - SOLO VOS
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'admin123';
+const ADMIN_USER = 'Remix22';
+const ADMIN_PASS = '2212';
 
 app.get('/',(req,res)=> res.redirect('/login'));
 
