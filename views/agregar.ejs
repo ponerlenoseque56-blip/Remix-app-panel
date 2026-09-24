@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agregar - REMIX APP</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial;padding:15px}
+.box{background:#111;padding:20px;border-radius:16px;border:1px solid #222;max-width:500px;margin:20px auto;border-top:3px solid #ff0000}
+h2{color:#ff0000;margin-top:0}
+label{font-size:12px;opacity:.7;display:block;margin:10px 0 4px}
+input,select{width:100%;background:#222;border:1px solid #333;padding:12px;border-radius:8px;color:#fff;outline:none}
+input:focus{border-color:#ff0000}
+.row{display:flex;gap:10px}
+.btn{width:100%;background:#ff0000;padding:14px;border:none;border-radius:8px;color:#fff;font-weight:bold;margin-top:15px;cursor:pointer}
+.btn2{background:#222;border:1px solid #333}
+.msg{padding:10px;border-radius:6px;margin:10px 0;text-align:center;font-size:13px;display:none}
+.msg.err{background:#4a0000;border:1px solid #ff0000;color:#ff6666;display:block}
+.msg.ok{background:#002a00;border:1px solid #00ff00;color:#66ff66;display:block}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Agregar Nuevo Cliente</h2>
+<p style="font-size:12px;opacity:.6">Créditos disponibles: <b style="color:#ff0000"><%= credits %></b> | Solo email único válido</p>
+
+<div id="msg" class="msg"></div>
+
+<form id="formAdd">
+<label>Nombre Cliente</label>
+<input name="nombre" placeholder="Ej: Juan Perez" required>
+
+<label>Email (único)</label>
+<input name="email" type="email" placeholder="cliente@gmail.com" required>
+
+<div class="row">
+<div style="flex:1"><label>Contraseña</label><input name="pass" placeholder="123456" required></div>
+<div style="flex:1"><label>Tipo</label><select name="tipo"><option value="Premium">Premium (30 días - gasta 1 crédito)</option><option value="Demo">Demo (3 días - gratis)</option></select></div>
+</div>
+
+<label>Dispositivos</label>
+<select name="dispositivos"><option value="1">1 Dispositivo</option><option value="2">2 Dispositivos</option><option value="3">3 Dispositivos</option></select>
+
+<button class="btn" type="submit">Crear Cliente</button>
+<a href="/dashboard"><button type="button" class="btn btn2">Volver</button></a>
+</form>
+</div>
+
+<script>
+document.getElementById('formAdd').addEventListener('submit',e=>{
+ e.preventDefault();
+ const fd=new FormData(e.target);
+ const data=Object.fromEntries(fd);
+ fetch('/api/create-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+ .then(r=>r.json()).then(j=>{
+  const m=document.getElementById('msg');
+  if(j.ok){ m.className='msg ok'; m.textContent='Cliente creado!'; setTimeout(()=>location.href='/dashboard',1000); }
+  else{ m.className='msg err'; m.textContent=j.msg; }
+ })
+});
+</script>
+</body>
+</html>
