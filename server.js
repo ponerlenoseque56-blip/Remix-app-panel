@@ -5,7 +5,15 @@ const bodyParser = require('body-parser');
 const app = express();
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'Remix-app-panel', 'views'));
+// BUSCA EN LAS 2 RUTAS, ASI NO FALLA MAS POR MAYUSCULAS
+app.set('views', [
+  path.join(__dirname, 'Remix-app-panel', 'views'),
+  path.join(__dirname, 'remix-app-panel', 'views'),
+  path.join(__dirname, 'views'),
+  path.join(__dirname, 'Remix-app-panel'),
+  path.join(__dirname, 'src', 'views')
+]);
+
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(session({secret:'remix2026',resave:false,saveUninitialized:true}));
