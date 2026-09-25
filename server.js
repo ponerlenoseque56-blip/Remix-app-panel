@@ -34,14 +34,14 @@ function checkAuth(req,res,next){
 }
 
 app.get('/', (req,res)=> res.redirect('/dashboard'));
-
 app.get('/login', (req,res)=> res.render('login', {error: null}));
 
 app.post('/login', (req,res)=>{
-  const { username, password } = req.body;
-  if(username==='admin' && password==='admin'){ 
+  const u = req.body.username;
+  const p = req.body.password;
+  if(u==='admin' && p==='admin'){ 
     req.session.logged=true; 
-    req.session.username=username; 
+    req.session.username=u; 
     res.redirect('/dashboard'); 
   } else { 
     res.render('login', {error: 'Usuario o clave incorrecta'}); 
@@ -53,15 +53,70 @@ app.get('/logout', (req,res)=>{
 });
 
 app.get('/dashboard', checkAuth, (req,res)=>{
-  let premium = db.users.filter(u=>u.tipo==='Premium').length;
-  let demos = db.users.filter(u=>u.tipo==='Demo').length;
-  res.render('dashboard', { 
-    db, 
-    username: req.session.username || 'admin', 
-    total: db.users.length, 
-    premium, 
-    demos 
-  });
+  let premium = db.users.filter(x=>x.tipo==='Premium').length;
+  let demos = db.users.filter(x=>x.tipo==='Demo').length;
+  res.render('dashboard', { db, username: 'admin', total: db.users.length, premium, demos });
 });
 
-app.get('/agregar-usuario
+app.get('/agregar-usuario', checkAuth, (req,res)=> res.render('agregar-usuario', { db }));
+
+function crearUsuario(req,res){
+  let nombre = req.body.nombre;
+  let email = req.body.email;
+  let password = req.body.password;
+  let tipo = req.body.tipo;
+  let fecha = new Date();
+  if(tipo==='Demo') fecha.setHours(fecha.getHours()+1);
+  else fecha.setDate(fecha.getDate()+30);
+  let vencimiento = fecha.toLocaleString('es-AR');
+  let nuevo = { nombre, email, password, tipo, vencimiento, vencimiento_ms: fecha.getTime() };
+  db.users.push(nuevo);
+  if(tipo!=='Demo') db.credits = Math.max(0, db.credits-1);
+  save();
+  let textoCopiar = '*' + tipo + '* - Email: ' + email + ' Clave: ' + password + ' Vence: ' + vencimiento;
+  res.render('usuario-creado', { nuevo, textoCopiar, esDemo: tipo==='Demo' });
+}
+
+app.post('/crear-usuario', checkAuth, crearUsuario);
+app.post('/agregar-usuario', checkAuth, crearUsuario);
+
+app.post('/api/delete-user', checkAuth, (req,res)=>{ 
+  db.users = db.users.filter(x=>x.email!==req.body.email); 
+  save(); 
+  res.json({ok:true}); 
+});
+
+app.post('/api/delete-demos', checkAuth, (req,res)=>{ 
+  db.users = db.users.filter(x=>x.tipo!=='Demo'); 
+  save(); 
+  res.json({ok:true}); 
+});
+
+app.post('/api/add-credits', checkAuth, (req,res)=>{ 
+  db.credits += parseInt(req.body.amount)||0; 
+  save(); 
+  res.json({ok:true}); 
+});
+
+app.post('/api/renew-user', checkAuth, (req,res)=>{
+  let u = db.users.find(x=>x.email===req.body.email);
+  if(u){ 
+    let f = new Date(); 
+    f.setDate(f.getDate()+30); 
+    u.vencimiento = f.toLocaleString('es-AR'); 
+    u.vencimiento_ms = f.getTime(); 
+    u.tipo = 'Premium'; 
+    db.credits = Math.max(0, db.credits-1); 
+    save(); 
+    res.json({ok:true}); 
+  } else res.json({ok:false});
+});
+
+app.post('/api/edit-user', checkAuth, (req,res)=>{
+  let u = db.users.find(x=>x.email===req.body.email);
+  if(u){ u.password=req.body.password; save(); res.json({ok:true}); } 
+  else res.json({ok:false});
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, ()=> console.log('OK '+PORT));
