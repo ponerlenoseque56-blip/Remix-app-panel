@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>REMIX APP</title>
-<style>body{background:#000;color:#fff;font-family:Arial;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0} .logo{width:120px;height:120px;border-radius:20px;margin-bottom:15px} h1{color:#ff0000;margin:0} .card{background:#111;border:1px solid #333;border-top:2px solid red;border-radius:12px;padding:20px;width:90%;max-width:350px;margin-top:20px} input{width:100%;padding:12px;margin:8px 0;background:#222;border:1px solid #333;border-radius:8px;color:#fff;box-sizing:border-box} button{width:100%;padding:12px;background:red;color:#fff;border:none;border-radius:8px;font-weight:bold}</style>
+<style>
+body{background:#000;color:#fff;font-family:Arial;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.logo{width:190px;height:190px;border-radius:25px;margin-bottom:10px;box-shadow:0 0 25px rgba(255,0,0,0.4)}
+h1{color:#ff0000;margin:0;font-size:32px}
+.sub{color:#888;font-size:13px;margin-bottom:20px}
+.card{background:#111;border:1px solid #333;border-top:2px solid red;border-radius:15px;padding:22px;width:92%;max-width:360px}
+.input-wrap{position:relative;margin:8px 0}
+.input-wrap input{width:100%;padding:12px 40px 12px 12px;background:#222;border:1px solid #333;border-radius:8px;color:#fff;box-sizing:border-box}
+.input-wrap span.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px}
+button{width:100%;padding:13px;background:red;color:#fff;border:none;border-radius:8px;font-weight:bold;font-size:16px;margin-top:12px;cursor:pointer}
+</style>
 </head>
 <body>
 <img src="/logo.png" class="logo">
 <h1>REMIX APP</h1>
-<p style="color:#888;font-size:13px">Ingresa al sistema</p>
+<div class="sub">Ingresa al sistema</div>
 <div class="card">
-<% if(typeof error !== 'undefined' && error){ %><div style="color:red;margin-bottom:10px"><%= error %></div><% } %>
+<% if(typeof error !== 'undefined' && error){ %><div style="color:#ff5555;background:#2a0000;padding:8px;border-radius:6px;margin-bottom:10px;font-size:13px"><%= error %></div><% } %>
 <form method="POST" action="/login">
-<input name="username" placeholder="Usuario" required>
-<input name="password" type="password" placeholder="Contraseña" required>
+<div class="input-wrap"><input name="username" placeholder="Usuario" required></div>
+<div class="input-wrap">
+<input id="pass" name="password" type="password" placeholder="Contraseña" required>
+<span class="eye" onclick="let i=document.getElementById('pass'); i.type=i.type==='password'?'text':'password'">👁️</span>
+</div>
 <button type="submit">Iniciar Session</button>
 </form>
 </div>
+<script>
+function togglePass(){ const p=document.getElementById('pass'); p.type = p.type==='password'?'text':'password'; }
+</script>
 </body>
 </html>
