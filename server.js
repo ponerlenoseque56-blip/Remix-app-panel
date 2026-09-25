@@ -33,32 +33,4 @@ function crear(req,res){
 let {nombre,email,password,tipo}=req.body;
 let f=new Date();
 if(tipo==='Demo')f.setHours(f.getHours()+1);else f.setDate(f.getDate()+30);
-let v=fechaArgentina(f);
-db.users.push({nombre,email,password,tipo,vencimiento:v,vencimiento_ms:f.getTime()});
-if(tipo!=='Demo')db.credits=Math.max(0,db.credits-1);
-save();
-res.render('usuario-creado',{nuevo:{nombre,email,password,tipo,vencimiento:v},textoCopiar:tipo+' Email:'+email+' Clave:'+password,esDemo:tipo==='Demo'});
-}
-app.post('/crear-usuario',checkAuth,crear);
-app.post('/agregar-usuario',checkAuth,crear);
-app.post('/api/delete-user',checkAuth,(req,res)=>{db.users=db.users.filter(x=>x.email!==req.body.email);save();res.json({ok:true});});
-app.post('/api/delete-demos',checkAuth,(req,res)=>{db.users=db.users.filter(x=>x.tipo!=='Demo');save();res.json({ok:true});});
-app.post('/api/add-credits',checkAuth,(req,res)=>{db.credits+=parseInt(req.body.amount)||0;save();res.json({ok:true});});
-app.post('/api/renew-user',checkAuth,(req,res)=>{
-let u=db.users.find(x=>x.email===req.body.email);
-if(u){
-let base=(u.vencimiento_ms&&u.vencimiento_ms>Date.now())?new Date(u.vencimiento_ms):new Date();
-base.setDate(base.getDate()+30);
-u.vencimiento=fechaArgentina(base);
-u.vencimiento_ms=base.getTime();
-u.tipo='Premium';
-db.credits=Math.max(0,db.credits-1);
-save();
-res.json({ok:true});
-}else res.json({ok:false});
-});
-app.post('/api/edit-user',checkAuth,(req,res)=>{
-let u=db.users.find(x=>x.email===req.body.email);
-if(u){u.password=req.body.password;save();res.json({ok:true});}else res.json({ok:false});
-});
-app.listen(process.env.PORT||10000,()=>console.log('OK'));
+let v=
