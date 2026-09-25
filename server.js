@@ -155,4 +155,14 @@ app.post('/api/renew-user', checkAuth, (req, res) => {
     } else {
       base = new Date();
     }
-    base.set
+    base.setDate(base.getDate() + 30);
+    u.vencimiento = fechaArgentina(base);
+    u.vencimiento_ms = base.getTime();
+    u.tipo = 'Premium';
+    db.credits = Math.max(0, db.credits - 1);
+    save();
+    res.json({ ok: true });
+  } else {
+    res.json({ ok: false });
+  }
+});
