@@ -1,67 +1,108 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>REMIX APP</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:Arial}
-.header{background:#0a0a0a;padding:12px 15px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ff0000}
-.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;padding:12px}
-.stat{background:#1a1a1a;border-radius:12px;padding:14px;text-align:center;border:1px solid #222}
-.stat.red{background:#e10600;border:none}
-.stat h2{font-size:26px;margin-bottom:2px}
-.stat small{font-size:11px;line-height:12px;display:block}
-.box{background:#151515;border:1px solid #ff0000;border-radius:8px;margin:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
-.btns{padding:0 12px;display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.b{padding:9px 16px;border-radius:20px;border:none;font-weight:bold;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block}
-.b-red{background:#ff0000;color:white}
-.b-dark{background:#2a2a2a;color:white}
-.search{width:calc(100% - 24px);margin:0 12px 12px 12px;padding:11px;background:#111;border:1px solid #333;border-radius:8px;color:white}
-table{width:100%;border-collapse:collapse}
-th{background:#e10600;padding:10px;font-size:11px}
-td{padding:10px;border-bottom:1px solid #1a1a1a;font-size:12px;text-align:center}
-.btn-mini{border:none;padding:6px 9px;border-radius:5px;color:white;font-weight:bold;font-size:11px;margin:1px;cursor:pointer}
-</style>
-</head>
-<body>
+const express = require('express');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+const app = express();
 
-<div class="header">
-<div style="display:flex;align-items:center;gap:10px">
-<img src="logo.png" onerror="this.style.display='none'" style="width:38px;height:38px;border-radius:8px;object-fit:cover">
-<b style="color:#ff0000">▶ REMIX APP</b>
-</div>
-<div style="font-size:13px"><%= username %> · Créditos: <%= db.credits %> <a href="/logout" style="background:#222;color:white;padding:6px 12px;border-radius:15px;text-decoration:none;margin-left:8px">Salir</a></div>
-</div>
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static('views'));
 
-<div class="stats">
-<div class="stat red"><h2><%= total %></h2><small>TOTAL<br>CLIENTES</small></div>
-<div class="stat red"><h2><%= premium %></h2><small>PREMIUM<br>ACTIVOS</small></div>
-<div class="stat"><h2><%= demos %></h2><small>DEMOS<br>ACTIVOS</small></div>
-<div class="stat"><h2>0</h2><small>VENCIDOS</small></div>
-</div>
+app.use(session({
+  secret: 'remix123',
+  resave: false,
+  saveUninitialized: true
+}));
 
-<div class="box">
-<span>🔑 Créditos: <b style="color:#ff0000"><%= db.credits %></b></span>
-<span><input id="c" type="number" value="5" style="width:60px;background:#000;color:#fff;border:1px solid #ff0000;padding:5px;border-radius:5px;text-align:center"> <button class="b b-red" onclick="addC()">Agregar</button></span>
-</div>
+let dbPath = path.join(__dirname, 'db.json');
+let db = { users: [], credits: 999 };
+if (fs.existsSync(dbPath)) {
+  try { db = JSON.parse(fs.readFileSync(dbPath)); if(!db.users) db.users=[]; if(db.credits==null) db.credits=999; } catch(e){}
+}
+function save(){ fs.writeFileSync(dbPath, JSON.stringify(db, null, 2)); }
 
-<div class="btns">
-<a href="/agregar-usuario" class="b b-red">+ Agregar Cliente</a>
-<button class="b b-dark" onclick="delDemos()">🗑 Borrar Demos</button>
-<button class="b b-dark" onclick="location.reload()">🔄 Actualizar</button>
-</div>
+function checkAuth(req,res,next){ if(req.session.logged){ next(); } else { res.redirect('/login'); } }
 
-<input id="buscador" class="search" placeholder="🔍 Buscar por nombre o email..." onkeyup="f()">
+app.get('/', (req,res)=> res.redirect('/dashboard'));
 
-<table id="t">
-<tr><th>CLIENTE</th><th>TIPO</th><th>DISP</th><th>VENCE</th><th>ACCIÓN</th></tr>
-<% (db.users || []).forEach(u=>{ %>
-<tr>
-<td style="text-align:left;padding-left:12px"><%= u.nombre %><br><small style="color:#777"><%= u.email %></small><br><small style="color:#555"><%= u.password %></small></td>
-<td style="color:<%= u.tipo=='Premium' ? '#ff0000' : '#888' %>;font-weight:bold"><%= u.tipo %></td>
-<td><%= u.dispositivos || 1 %></td>
-<td style="font-size:11px"><%= u.vencimiento %></td>
-<td>
-<button onclick="renovar('<%= u.email %>')" class="btn-mini
+app.get('/login', (req,res)=> res.render('login'));
+app.post('/login', (req,res)=>{
+  const { username, password } = req.body;
+  if(username==='admin' && password==='admin'){ req.session.logged=true; req.session.username=username; res.redirect('/dashboard'); }
+  else { res.send('Usuario o clave incorrecta <a href="/login">Volver</a>'); }
+});
+
+app.get('/logout', (req,res)=>{ req.session.destroy(()=>res.redirect('/login')); });
+
+app.get('/dashboard', checkAuth, (req,res)=>{
+  let premium = db.users.filter(u=>u.tipo==='Premium').length;
+  let demos = db.users.filter(u=>u.tipo==='Demo').length;
+  res.render('dashboard', {
+    db: db,
+    username: req.session.username || 'admin',
+    total: db.users.length,
+    premium: premium,
+    demos: demos
+  });
+});
+
+app.get('/agregar-usuario', checkAuth, (req,res)=> res.render('agregar-usuario', { db: db }));
+
+app.post('/crear-usuario', checkAuth, (req,res)=>{
+  let { nombre, email, password, tipo, dispositivos } = req.body;
+  let dias = tipo==='Demo' ? 1 : 30;
+  let horas = tipo==='Demo' ? 1 : 0;
+  let fecha = new Date();
+  if(tipo==='Demo') fecha.setHours(fecha.getHours()+1);
+  else fecha.setDate(fecha.getDate()+30);
+  let vencimiento = fecha.toLocaleString('es-AR');
+  
+  let nuevo = { nombre, email, password, tipo, dispositivos: dispositivos||1, vencimiento, vencimiento_ms: fecha.getTime() };
+  db.users.push(nuevo);
+  if(tipo!=='Demo') db.credits = Math.max(0, db.credits-1);
+  save();
+
+  let textoCopiar = `*${tipo==='Demo'?'DEMO CREADA':'CLIENTE GENERADO'}* ✅\n\n📧 Email: ${email}\n🔑 Clave: ${password}\n👤 Usuario: ${nombre}\n⏰ Vence: ${vencimiento}\n📱 Tipo: ${tipo}`;
+  res.render('usuario-creado', { nuevo, textoCopiar, esDemo: tipo==='Demo' });
+});
+
+app.post('/api/delete-user', checkAuth, (req,res)=>{
+  db.users = db.users.filter(u=>u.email!==req.body.email);
+  save(); res.json({ok:true});
+});
+
+app.post('/api/delete-demos', checkAuth, (req,res)=>{
+  db.users = db.users.filter(u=>u.tipo!=='Demo');
+  save(); res.json({ok:true});
+});
+
+app.post('/api/add-credits', checkAuth, (req,res)=>{
+  db.credits += parseInt(req.body.amount)||0;
+  save(); res.json({ok:true});
+});
+
+app.post('/api/renew-user', checkAuth, (req,res)=>{
+  let u = db.users.find(x=>x.email===req.body.email);
+  if(u){
+    let fecha = new Date();
+    fecha.setDate(fecha.getDate()+30);
+    u.vencimiento = fecha.toLocaleString('es-AR');
+    u.vencimiento_ms = fecha.getTime();
+    u.tipo = 'Premium';
+    db.credits = Math.max(0, db.credits-1);
+    save();
+    res.json({ok:true, vencimiento: u.vencimiento});
+  } else res.json({ok:false});
+});
+
+app.post('/api/edit-user', checkAuth, (req,res)=>{
+  let u = db.users.find(x=>x.email===req.body.email);
+  if(u){ u.password=req.body.password; save(); res.json({ok:true}); }
+  else res.json({ok:false});
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, ()=> console.log('Remix corriendo en '+PORT));
