@@ -39,7 +39,7 @@ app.get('/login', (req,res)=> res.render('login', {error: null}));
 app.post('/login', (req,res)=>{
   const u = req.body.username;
   const p = req.body.password;
-  if(u==='admin' && p==='admin'){ 
+  if((u==='admin' && p==='admin') || (u==='Remix22' && p==='2212')){ 
     req.session.logged=true; 
     req.session.username=u; 
     res.redirect('/dashboard'); 
@@ -55,7 +55,7 @@ app.get('/logout', (req,res)=>{
 app.get('/dashboard', checkAuth, (req,res)=>{
   let premium = db.users.filter(x=>x.tipo==='Premium').length;
   let demos = db.users.filter(x=>x.tipo==='Demo').length;
-  res.render('dashboard', { db, username: 'admin', total: db.users.length, premium, demos });
+  res.render('dashboard', { db, username: req.session.username, total: db.users.length, premium, demos });
 });
 
 app.get('/agregar-usuario', checkAuth, (req,res)=> res.render('agregar-usuario', { db }));
@@ -67,56 +67,4 @@ function crearUsuario(req,res){
   let tipo = req.body.tipo;
   let fecha = new Date();
   if(tipo==='Demo') fecha.setHours(fecha.getHours()+1);
-  else fecha.setDate(fecha.getDate()+30);
-  let vencimiento = fecha.toLocaleString('es-AR');
-  let nuevo = { nombre, email, password, tipo, vencimiento, vencimiento_ms: fecha.getTime() };
-  db.users.push(nuevo);
-  if(tipo!=='Demo') db.credits = Math.max(0, db.credits-1);
-  save();
-  let textoCopiar = '*' + tipo + '* - Email: ' + email + ' Clave: ' + password + ' Vence: ' + vencimiento;
-  res.render('usuario-creado', { nuevo, textoCopiar, esDemo: tipo==='Demo' });
-}
-
-app.post('/crear-usuario', checkAuth, crearUsuario);
-app.post('/agregar-usuario', checkAuth, crearUsuario);
-
-app.post('/api/delete-user', checkAuth, (req,res)=>{ 
-  db.users = db.users.filter(x=>x.email!==req.body.email); 
-  save(); 
-  res.json({ok:true}); 
-});
-
-app.post('/api/delete-demos', checkAuth, (req,res)=>{ 
-  db.users = db.users.filter(x=>x.tipo!=='Demo'); 
-  save(); 
-  res.json({ok:true}); 
-});
-
-app.post('/api/add-credits', checkAuth, (req,res)=>{ 
-  db.credits += parseInt(req.body.amount)||0; 
-  save(); 
-  res.json({ok:true}); 
-});
-
-app.post('/api/renew-user', checkAuth, (req,res)=>{
-  let u = db.users.find(x=>x.email===req.body.email);
-  if(u){ 
-    let f = new Date(); 
-    f.setDate(f.getDate()+30); 
-    u.vencimiento = f.toLocaleString('es-AR'); 
-    u.vencimiento_ms = f.getTime(); 
-    u.tipo = 'Premium'; 
-    db.credits = Math.max(0, db.credits-1); 
-    save(); 
-    res.json({ok:true}); 
-  } else res.json({ok:false});
-});
-
-app.post('/api/edit-user', checkAuth, (req,res)=>{
-  let u = db.users.find(x=>x.email===req.body.email);
-  if(u){ u.password=req.body.password; save(); res.json({ok:true}); } 
-  else res.json({ok:false});
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, ()=> console.log('OK '+PORT));
+  else fecha.setDate(fecha.getDate()+
