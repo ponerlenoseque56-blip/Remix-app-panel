@@ -54,7 +54,6 @@ app.get('/agregar-usuario', checkAuth, (req,res)=> res.render('agregar-usuario',
 app.post('/crear-usuario', checkAuth, (req,res)=>{
   let { nombre, email, password, tipo, dispositivos } = req.body;
   let dias = tipo==='Demo' ? 1 : 30;
-  let horas = tipo==='Demo' ? 1 : 0;
   let fecha = new Date();
   if(tipo==='Demo') fecha.setHours(fecha.getHours()+1);
   else fecha.setDate(fecha.getDate()+30);
@@ -84,6 +83,7 @@ app.post('/api/add-credits', checkAuth, (req,res)=>{
   save(); res.json({ok:true});
 });
 
+// +30D - suma 30 dias desde hoy
 app.post('/api/renew-user', checkAuth, (req,res)=>{
   let u = db.users.find(x=>x.email===req.body.email);
   if(u){
@@ -98,6 +98,7 @@ app.post('/api/renew-user', checkAuth, (req,res)=>{
   } else res.json({ok:false});
 });
 
+// CLAVE - cambiar clave
 app.post('/api/edit-user', checkAuth, (req,res)=>{
   let u = db.users.find(x=>x.email===req.body.email);
   if(u){ u.password=req.body.password; save(); res.json({ok:true}); }
