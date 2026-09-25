@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:20px}.card{background:#111;border:1px solid #222;padding:20px;border-radius:12px;text-align:left;margin-top:20px}.btn{padding:14px;background:#E50914;color:#fff;border:none;border-radius:8px;font-weight:bold;width:100%;margin-top:12px}.ok{color:#00ff88;font-size:26px;font-weight:bold}</style></head>
+<body><div class="ok"><%= esDemo?'DEMO CREADA ✅':'CLIENTE GENERADO ✅' %></div>
+<div class="card"><p>📧 Email: <b><%= nuevo.email %></b></p><p>🔑 Clave: <b><%= nuevo.password %></b></p><p>👤 Usuario: <b><%= nuevo.nombre %></b></p><p>⏰ Vence: <b><%= nuevo.vencimiento %></b></p></div>
+<button class="btn" onclick="copiar()">COPIAR DATOS</button><a href="/dashboard"><button class="btn" style="background:#333">VOLVER</button></a>
+<script>let texto=`<%= textoCopiar %>`;function copiar(){navigator.clipboard.writeText(texto).then(()=>{alert('Copiado ✅');location.href='/dashboard';});}window.onload=()=>{navigator.clipboard.writeText(texto);}</script></body></html>
