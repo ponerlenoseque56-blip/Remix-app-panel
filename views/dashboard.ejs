@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>REMIX APP</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -11,51 +10,51 @@ body{background:#000;color:#fff;font-family:Arial}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;padding:12px}
 .stat{background:#1a1a1a;border-radius:12px;padding:14px;text-align:center;border:1px solid #222}
 .stat.red{background:#e10600;border:none}
-.stat h2{font-size:26px;margin-bottom:2px}
-.stat small{font-size:11px;line-height:12px;display:block}
-.box{background:#151515;border:1px solid #ff0000;border-radius:8px;margin:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:13px;flex-wrap:wrap;gap:8px}
-.btns{padding:0 12px;display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.stat h2{font-size:26px}
+.stat small{font-size:11px;display:block}
+.box{background:#151515;border:1px solid #ff0000;border-radius:8px;margin:12px;padding:10px;display:flex;justify-content:space-between;align-items:center}
+.btns{padding:0 12px;display:flex;gap:8px;margin-bottom:12px}
 .b{padding:9px 16px;border-radius:20px;border:none;font-weight:bold;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block}
 .b-red{background:#ff0000;color:white}
 .b-dark{background:#2a2a2a;color:white}
 .search{width:calc(100% - 24px);margin:0 12px 12px 12px;padding:11px;background:#111;border:1px solid #333;border-radius:8px;color:white}
 table{width:100%;border-collapse:collapse}
 th{background:#e10600;padding:10px;font-size:11px}
-td{padding:10px;border-bottom:1px solid #1a1a1a;font-size:12px;text-align:center;word-break:break-all}
-.btn-mini{border:none;padding:5px 8px;border-radius:5px;color:white;font-weight:bold;font-size:11px;margin:1px;cursor:pointer}
+td{padding:10px;border-bottom:1px solid #1a1a1a;font-size:12px;text-align:center}
+.btn-mini{border:none;padding:6px 9px;border-radius:5px;color:white;font-weight:bold;font-size:11px;margin:2px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="header">
 <div style="display:flex;align-items:center;gap:10px">
-<img src="https://i.imgur.com/8Km9tLL.png" style="width:38px;height:38px;border-radius:8px">
-<b style="color:#ff0000">▶ REMIX APP</b>
+<img src="/logo.png" style="width:40px;height:40px;border-radius:8px">
+<b style="color:#ff0000">REMIX APP</b>
 </div>
-<div style="font-size:13px"><%= username %> · Créditos: <%= db.credits %> <a href="/logout" style="background:#222;color:white;padding:6px 12px;border-radius:15px;text-decoration:none;margin-left:8px">Salir</a></div>
+<div style="font-size:13px"><%= username %> - <%= db.credits %> cred <a href="/logout" style="background:#222;color:white;padding:6px 12px;border-radius:15px;text-decoration:none;margin-left:8px">Salir</a></div>
 </div>
 <div class="stats">
-<div class="stat red"><h2><%= total %></h2><small>TOTAL<br>CLIENTES</small></div>
-<div class="stat red"><h2><%= premium %></h2><small>PREMIUM<br>ACTIVOS</small></div>
-<div class="stat"><h2><%= demos %></h2><small>DEMOS<br>ACTIVOS</small></div>
+<div class="stat red"><h2><%= total %></h2><small>TOTAL</small></div>
+<div class="stat red"><h2><%= premium %></h2><small>PREMIUM</small></div>
+<div class="stat"><h2><%= demos %></h2><small>DEMOS</small></div>
 <div class="stat"><h2>0</h2><small>VENCIDOS</small></div>
 </div>
 <div class="box">
-<span>🔑 Créditos: <b style="color:#ff0000"><%= db.credits %></b></span>
-<span><input id="c" type="number" value="5" style="width:60px;background:#000;color:#fff;border:1px solid #ff0000;padding:5px;border-radius:5px;text-align:center"> <button class="b b-red" onclick="addC()">Agregar</button></span>
+<span>Creditos: <b style="color:#ff0000"><%= db.credits %></b></span>
+<span><input id="c" type="number" value="5" style="width:60px;background:#000;color:#fff;border:1px solid #ff0000;padding:5px;border-radius:5px"> <button class="b b-red" onclick="addC()">Agregar</button></span>
 </div>
 <div class="btns">
 <a href="/agregar-usuario" class="b b-red">+ Agregar Cliente</a>
 <button class="b b-dark" onclick="borrarDemos()">Borrar Demos</button>
 </div>
-<input id="buscador" class="search" placeholder="🔍 Buscar email o nombre..." onkeyup="filtrar()">
+<input id="buscador" class="search" placeholder="Buscar..." onkeyup="filtrar()">
 <table id="tabla">
-<tr><th>NOMBRE</th><th>EMAIL</th><th>CLAVE</th><th>TIPO</th><th>VENCE</th><th>ACCIONES</th></tr>
+<tr><th>NOMBRE</th><th>EMAIL</th><th>CLAVE</th><th>TIPO</th><th>VENCE</th><th>ACCION</th></tr>
 <% db.users.forEach(u=>{ %>
 <tr>
 <td><%= u.nombre %></td>
-<td><%= u.email %></td>
+<td style="font-size:10px"><%= u.email %></td>
 <td><%= u.password %></td>
-<td><span style="background:<%= u.tipo==='Premium'?'#e10600':'#444' %>;padding:3px 8px;border-radius:10px"><%= u.tipo %></span></td>
+<td><%= u.tipo %></td>
 <td style="font-size:10px"><%= u.vencimiento %></td>
 <td>
 <button class="btn-mini" style="background:#2563eb" onclick="renew('<%= u.email %>')">+30D</button>
@@ -66,4 +65,12 @@ td{padding:10px;border-bottom:1px solid #1a1a1a;font-size:12px;text-align:center
 <% }) %>
 </table>
 <script>
-function renew(email){ if(!confirm('Renovar 30 días a '+email+'? -1 crédito')) return; fetch('/api/renew-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r
+function renew(email){ if(!confirm('Renovar 30 dias a '+email+' ? -1 credito')) return; fetch('/api/renew-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).then(d=>{ if(d.ok) location.reload(); else alert('Error al renovar'); }); }
+function editPass(email){ let n=prompt('Nueva clave para '+email); if(!n) return; fetch('/api/edit-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:n})}).then(r=>r.json()).then(d=>{ if(d.ok) location.reload(); else alert('Error'); }); }
+function delUser(email){ if(!confirm('Borrar '+email+' ?')) return; fetch('/api/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(()=>location.reload()); }
+function borrarDemos(){ if(!confirm('Borrar TODAS las demos?')) return; fetch('/api/delete-demos',{method:'POST'}).then(()=>location.reload()); }
+function addC(){ let amount=document.getElementById('c').value; fetch('/api/add-credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount})}).then(()=>location.reload()); }
+function filtrar(){ let f=document.getElementById('buscador').value.toLowerCase(); document.querySelectorAll('#tabla tr').forEach((tr,i)=>{ if(i==0) return; tr.style.display=tr.innerText.toLowerCase().includes(f)?'':'none'; }); }
+</script>
+</body>
+</html>
