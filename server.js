@@ -26,11 +26,4 @@ app.get('/logout',(req,res)=>req.session.destroy(()=>res.redirect('/login')));
 app.get('/dashboard',checkAuth,(req,res)=>{
 let prem=db.users.filter(x=>x.tipo==='Premium').length;
 let dem=db.users.filter(x=>x.tipo==='Demo').length;
-res.render('dashboard',{db,username:req.session.username,total:db.users.length,premium:prem,demos:dem});
-});
-app.get('/agregar-usuario',checkAuth,(req,res)=>res.render('agregar-usuario',{db}));
-function crear(req,res){
-let {nombre,email,password,tipo}=req.body;
-let f=new Date();
-if(tipo==='Demo')f.setHours(f.getHours()+1);else f.setDate(f.getDate()+30);
-let v=
+res.render('dashboard',{db,username
