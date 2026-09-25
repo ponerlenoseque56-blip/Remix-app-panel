@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>REMIX APP - Login</title>
-<style>
-body{background:#000;color:#fff;font-family:Arial;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0}
-.logo
+<title>REMIX APP</title>
+<style>body{background:#000;color:#fff;font-family:Arial;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0} .logo{width:120px;height:120px;border-radius:20px;margin-bottom:15px} h1{color:#ff0000;margin:0} .card{background:#111;border:1px solid #333;border-top:2px solid red;border-radius:12px;padding:20px;width:90%;max-width:350px;margin-top:20px} input{width:100%;padding:12px;margin:8px 0;background:#222;border:1px solid #333;border-radius:8px;color:#fff;box-sizing:border-box} button{width:100%;padding:12px;background:red;color:#fff;border:none;border-radius:8px;font-weight:bold}</style>
+</head>
+<body>
+<img src="/logo.png" class="logo">
+<h1>REMIX APP</h1>
+<p style="color:#888;font-size:13px">Ingresa al sistema</p>
+<div class="card">
+<% if(typeof error !== 'undefined' && error){ %><div style="color:red;margin-bottom:10px"><%= error %></div><% } %>
+<form method="POST" action="/login">
+<input name="username" placeholder="Usuario" required>
+<input name="password" type="password" placeholder="Contraseña" required>
+<button type="submit">Iniciar Session</button>
+</form>
+</div>
+</body>
+</html>
